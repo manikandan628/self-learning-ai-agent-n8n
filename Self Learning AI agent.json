@@ -1,0 +1,525 @@
+{
+  "name": "Self Learning AI agent",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -224,
+        -16
+      ],
+      "id": "bcde0aa1-139f-46a5-92c6-77060cd029a3",
+      "name": "Telegram Trigger",
+      "webhookId": "a0ab26f4-156c-40cc-9794-46ee3895e912",
+      "credentials": {
+        "telegramApi": {
+          "id": "Qo6lvAWneePcRLQe",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a26cbd2e-ed78-4bec-a415-976041a50508",
+              "name": "Text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        336,
+        208
+      ],
+      "id": "9e088348-e92a-4fa6-8d1b-0ef3a98204b3",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1lTzlsWoXxwn7GKK0UImcojb6Q2S4fwlWiMXAvVc8dzc",
+          "mode": "list",
+          "cachedResultName": "ai_agent_memory_sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lTzlsWoXxwn7GKK0UImcojb6Q2S4fwlWiMXAvVc8dzc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1440398539,
+          "mode": "list",
+          "cachedResultName": "Memory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lTzlsWoXxwn7GKK0UImcojb6Q2S4fwlWiMXAvVc8dzc/edit#gid=1440398539"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        48,
+        -160
+      ],
+      "id": "d0c44ad2-9e89-4b95-8398-318b8e991943",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YstWpHs72lveMyIJ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "Memory"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        256,
+        -160
+      ],
+      "id": "9f946f97-7d57-4afe-b8f7-f17b9d3b943a",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "6e13c8e5-70a0-47ae-91fa-912243e6fe47",
+                    "leftValue": "={{ $json.message.voice.mime_type }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Voice"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e8ddb0da-1b57-4d33-8300-6d8a73a9a564"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        64,
+        80
+      ],
+      "id": "8190e433-2677-4aa1-9362-de4201d14d52",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        304,
+        -16
+      ],
+      "id": "67691487-4061-4133-810f-d2dcb88398ae",
+      "name": "Get a file",
+      "webhookId": "47bf4b70-74b2-428c-a6ca-facc37bec052",
+      "credentials": {
+        "telegramApi": {
+          "id": "Qo6lvAWneePcRLQe",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        512,
+        -16
+      ],
+      "id": "8dca843c-2449-4fda-995f-b91a6aecfb61",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "pb6eHxd090FMqbrb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=if Voice Arrives use this prompt : {{ $json.content.parts[0].text }}\n\n\nIF Text arrives use this : {{ $json.Text }}",
+        "options": {
+          "systemMessage": "=You are an AI assistant embedded in an n8n workflow. You can:\n\n- Evaluate, execute, and generate JavaScript expressions ( {{''}} )\n- Read and write “memories” about the user\n- Provide helpful, context-aware responses in a conversation style\n\n---\n\n### Memory Handling\n\nYou have access to a list of past memories about the user via {{ $json.Memory }}.\n- To **add** a new memory, call memory_tool with a **single sentence** summarizing a new insight or preference.\n- Don't feel forced to always use memories – only when they add value.\n- In the case where you have multiple memories, make sure to run the memory tool multiple times for the amount of times that you have to hide the memory for.\n\n---\n\n### Response Style & Structure\n\n- Always respond **conversationally**, as if talking to a human.\n- If a list is necessary, keep it short (3–5 items), simple, and no deep nesting.\n- After your main response, optionally include a **TL;DR:** one-sentence summary.\n- Maintain a tone that's helpful, confident (but not overbearing), and lightly friendly (no excessive jokes unless the user wants that).\n\n---\n\n### Context Awareness\n\n- Use relevant memories to tailor your answers (preferences, past decisions, etc.).\n- If uncertain or more context is needed, ask a clarifying question before proceeding.\n\n---\n\n### Code / Execution\n\n- When producing JavaScript for {{''}}, ensure it's valid and safe.\n- If needed, comment the code for clarity.\n- If the user's request involves n8n workflows, be explicit: include step names, node types, and mappings."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        960,
+        -16
+      ],
+      "id": "40b44b62-157c-4521-a3fa-58d0fb463d54",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        768,
+        -16
+      ],
+      "id": "5c5c5903-7cd2-4846-a997-615f40b1ccc9",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        832,
+        192
+      ],
+      "id": "93e2644b-cef2-445c-97de-de183ef6a11e",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "JXWMoUjUHBpcy6nx",
+          "name": "Sales Key GRoq"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Switch').item.json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1024,
+        208
+      ],
+      "id": "345112ce-0b7d-4056-9a13-00b5dfc029a8",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1264,
+        -16
+      ],
+      "id": "34216771-8da3-4e19-b990-276422391d19",
+      "name": "Send a text message",
+      "webhookId": "023f0bdf-dbc3-4e0e-8d39-27cc033846c2",
+      "credentials": {
+        "telegramApi": {
+          "id": "Qo6lvAWneePcRLQe",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1lTzlsWoXxwn7GKK0UImcojb6Q2S4fwlWiMXAvVc8dzc",
+          "mode": "list",
+          "cachedResultName": "ai_agent_memory_sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lTzlsWoXxwn7GKK0UImcojb6Q2S4fwlWiMXAvVc8dzc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1440398539,
+          "mode": "list",
+          "cachedResultName": "Memory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lTzlsWoXxwn7GKK0UImcojb6Q2S4fwlWiMXAvVc8dzc/edit#gid=1440398539"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Memory": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Memory', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "Memory"
+          ],
+          "schema": [
+            {
+              "id": "Memory",
+              "displayName": "Memory",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1216,
+        192
+      ],
+      "id": "546a2fc8-e039-4fa3-9d75-1c0b8aa0ae8a",
+      "name": "memory_tool",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YstWpHs72lveMyIJ",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "memory_tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "79241848-c4f7-4ade-aecf-aadb2ef1be2c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ac2406538c88a727e254dc002e990511763b670d5134496b5057a42736a95036"
+  },
+  "id": "aAqXuwuERaLkFofq",
+  "tags": []
+}
